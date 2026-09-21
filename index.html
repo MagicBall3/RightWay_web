@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>RightWay</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body { margin: 0; height: 100%; background: #070a12; overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #fff; }
+
+  /* Сцена 960x540, масштабируется под экран через JS */
+  #stage { position: absolute; left: 0; top: 0; width: 960px; height: 540px;
+    transform-origin: 0 0; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 30%, #1b2440 0%, #0c1120 60%, #070a12 100%); }
+
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; }
+  .screen.active { display: flex; }
+
+  /* Переливающийся заголовок */
+  .title { margin: 0; font-size: 104px; font-weight: 900; letter-spacing: 2px; line-height: 1.1;
+    background: linear-gradient(90deg, #4facfe, #a78bfa, #f472b6, #fbbf24, #34d399, #4facfe);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 5s linear infinite; }
+  @keyframes shimmer { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+  .subtitle { margin: 0 0 22px; font-size: 20px; letter-spacing: 6px; color: #9fb0d6; text-transform: uppercase; }
+
+  .btn { width: 300px; padding: 14px 0; font-size: 22px; font-weight: 600; color: #fff;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22);
+    border-radius: 14px; cursor: pointer; backdrop-filter: blur(6px);
+    transition: transform .15s, background .15s; }
+  .btn:hover, .btn:active { background: rgba(255,255,255,.18); transform: scale(1.04); }
+  .btn.primary { background: linear-gradient(90deg, #4facfe, #a78bfa); border: none; }
+
+  h2 { margin: 0 0 6px; font-size: 40px; }
+  .text { max-width: 640px; text-align: center; font-size: 19px; line-height: 1.5; color: #cfd8f0; }
+
+  /* Переключатель в настройках */
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    width: 460px; padding: 16px 20px; font-size: 21px;
+    background: rgba(255,255,255,.07); border-radius: 14px; }
+  .switch { position: relative; width: 64px; height: 34px; border-radius: 17px;
+    background: #3a4360; cursor: pointer; transition: background .2s; flex: none; }
+  .switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 26px; height: 26px;
+    border-radius: 50%; background: #fff; transition: transform .2s; }
+  .switch.on { background: #34d399; }
+  .switch.on::after { transform: translateX(30px); }
+
+  /* Экранное управление (пока визуальное) */
+  #joy, #btnA { display: none; position: absolute; bottom: 30px; border-radius: 50%;
+    background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.35); }
+  #joy { left: 40px; width: 130px; height: 130px; }
+  #joy::after { content: ""; position: absolute; left: 35px; top: 35px; width: 60px; height: 60px;
+    border-radius: 50%; background: rgba(255,255,255,.3); }
+  #btnA { right: 50px; width: 90px; height: 90px; display: none; align-items: center;
+    justify-content: center; font-size: 28px; font-weight: 700; }
+  body.controls-on #joy { display: block; }
+  body.controls-on #btnA { display: flex; }
+
+  /* Просьба повернуть телефон */
+  #rotate { position: fixed; inset: 0; z-index: 10; display: none; align-items: center;
+    justify-content: center; text-align: center; padding: 30px; font-size: 22px;
+    background: #070a12; }
+  @media (orientation: portrait) { #rotate { display: flex; } }
+</style>
+</head>
+<body>
+
+<div id="rotate">📱 Поверни телефон горизонтально,<br>чтобы играть</div>
+
+<div id="stage">
+
+  <!-- Главное меню -->
+  <section class="screen active" id="menu">
+    <h1 class="title">RightWay</h1>
+    <p class="subtitle">Правовой детектив</p>
+    <button class="btn primary" data-go="game">Начать игру</button>
+    <button class="btn" data-go="about">О проекте</button>
+    <button class="btn" data-go="settings">Настройки</button>
+  </section>
+
+  <!-- О проекте -->
+  <section class="screen" id="about">
+    <h2>О проекте</h2>
+    <p class="text">Интерактивный детектив, где ты расследуешь школьные ситуации, изучаешь свои права и обязанности и принимаешь решения по закону. Проект занял 2-е место на конкурсе «Заң мен тәртіп — Адал азамат жолы».</p>
+    <button class="btn" data-go="menu">Назад</button>
+  </section>
+
+  <!-- Настройки -->
+  <section class="screen" id="settings">
+    <h2>Настройки</h2>
+    <div class="row">
+      <span>Экранное управление</span>
+      <div class="switch" id="toggle-controls" role="switch"></div>
+    </div>
+    <button class="btn" data-go="menu">Назад</button>
+  </section>
+
+  <!-- Игра (заглушка) -->
+  <section class="screen" id="game">
+    <h2>Здесь будет игра</h2>
+    <button class="btn" data-go="menu">В меню</button>
+    <div id="joy"></div>
+    <div id="btnA" class="btn" style="width:90px;padding:0">A</div>
+  </section>
+
+</div>
+
+<script>
+  const stage = document.getElementById('stage');
+
+  // Подгоняем сцену под любой экран
+  function fit() {
+    const s = Math.min(innerWidth / 960, innerHeight / 540);
+    const x = (innerWidth - 960 * s) / 2;
+    const y = (innerHeight - 540 * s) / 2;
+    stage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+  }
+  addEventListener('resize', fit);
+  addEventListener('orientationchange', fit);
+  fit();
+
+  // Переключение экранов
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  }
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+
+  // Настройка: экранное управление
+  const toggle = document.getElementById('toggle-controls');
+  let controlsOn = true;
+  try {
+    const saved = localStorage.getItem('rw_controls');
+    if (saved !== null) controlsOn = saved === '1';
+  } catch (e) {}
+
+  function applyControls() {
+    document.body.classList.toggle('controls-on', controlsOn);
+    toggle.classList.toggle('on', controlsOn);
+    toggle.setAttribute('aria-checked', controlsOn);
+  }
+  toggle.onclick = () => {
+    controlsOn = !controlsOn;
+    try { localStorage.setItem('rw_controls', controlsOn ? '1' : '0'); } catch (e) {}
+    applyControls();
+  };
+  applyControls();
+</script>
+</body>
+</html>
